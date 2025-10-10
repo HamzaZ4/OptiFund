@@ -1,8 +1,3 @@
-import pandas as pd
-
-from src.returns import *
-
-
 def test_daily_returns():
     prices = pd.Series([100,103, 106.09])
     expected = pd.Series([None, 0.03, 0.03])
