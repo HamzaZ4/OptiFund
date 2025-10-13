@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.stats import kurtosis, norm
 import seaborn as sns
+from src.data.fetch_data import get_close_prices
 
 companies = yf.Tickers(["JPM","BAC","TLT","XOM"])
 
@@ -47,17 +48,17 @@ def compute_sharpe_ratio(ticker):
     Returns:
         The Sharpe ratio value over the period of the past year (int)
     """
-    stock = yf.Ticker(ticker)
-    history = stock.history(period="5y")
-    returns = history["Close"].pct_change().dropna()
+    returns = get_close_prices(ticker, "5y")
 
     # Using ^IRX as the basis for a "risk-free asset":
     # ^IRX is the ticker symbol that represents the 13-week us treasury bill yield
     # (interest rate that the us gov pays on short term)
-    benchmark_data = yf.Ticker("^IRX").history(period="5y")["Close"]
+    benchmark_data = get_close_prices("^IRX", "5y")
+
+
     annual_returns_bench = benchmark_data/100
     daily_ret_ben = annual_returns_bench / 252
-    rf_daily = daily_ret_ben.reindex(returns.index, method="ffill")
+    rf_daily = daily_ret_ben.reindex(returns.index, method="fill")
 
     excess = returns - rf_daily
 

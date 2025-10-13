@@ -1,56 +1,91 @@
+from pathlib import Path
+
 from returns import *
 import matplotlib.pyplot as plt
+from src.data.fetch_data import get_close_prices
 
-def sma_strat(sma, prices):
-    # my first step is to want to get the signals
-    # this identifies when the prices and sma are crossing
+
+project_root = Path(__file__).resolve().parents[3]  # up twice from indicators/
+plot_dir = project_root / "src" / "plots" / "strategies"
+plot_dir.mkdir(parents=True, exist_ok=True)
+
+def generate_signals(prices, sma):
 
     # signals is like "Based on today's price vs SMA, should I ben IN(1) or OUT (0)"
     # we should be in because that is following the "uptrend" so we get in "early"
-    signals = (prices>sma).astype(int)
+    signals = (prices > sma).astype(int)
+    return signals
 
-    # on day t, after the market closes, you compare today's price vs SMA
-    # if price > SMA -> signal = 1 we want in
-    # if price < SMA -> signal = 0 we want out
 
-    # but the signal is only known at the end of the day, so we ACT ON IT ON DAY t+1
-    # so position[t] is the signal we generated using yesterday's closing price.
-
-    # tells us, coming into day t, are we holding stock (1) or not (0)
+def build_positions(signals):
     positions = signals.shift(1).fillna(0)
+    return positions
+
+
+def compute_strategy_returns(daily_returns, positions):
+
+    strategy_returns = daily_returns * positions
+    return strategy_returns
 
 
 
-#COMPUTING RETURNS:
+def plot_strategy_vs_bh(strat_cumulative, bh_cumulative,prices,sma, ticker="AAPL"):
+    fig, (ax1, ax2) = plt.subplots(
+        2,1, figsize=(10,8), sharex=True, gridspec_kw={"height_ratios":[3,1]}
+    )
 
-    # if positions[t] = 1, it means that we bought at close the day of t-1
-    #  and are holding through day t
-    # our gain/loss is just the daily return of day t
-    # it positions[t] = 0, we're in cash, daily return = 0
+    ax1.plot(strat_cumulative, label="SMA STRAT", linestyle="--")
+    ax1.plot(bh_cumulative, label="BH STRAT", linestyle=":")
+    ax1.set_title("SMA Strategy vs Buy & Hold")
+    ax1.set_ylabel("Cumulative Return")
+    ax1.grid(True, linestyle="--", alpha=0.6)
+    ax1.legend(loc="best")
 
-    strategy_returns = compute_daily_returns(prices) * positions
+    ax2.plot(prices, label=f"{ticker} Price", linewidth=1.5)
+    ax2.plot(sma, label=f"{ticker} {len(sma.dropna())}-day SMA", linestyle="--")
+    ax2.set_ylabel("Price")
+    ax2.set_xlabel("Date")
+    ax2.grid(True, linestyle="--", alpha=0.6)
+    ax2.legend(loc="best")
 
-    # cumulative returns from strat
-    strat_returns = (1 + strategy_returns).cumprod() - 1
-    bh_returns = compute_cumulative_returns(prices)
-
-    plt.plot(strat_returns, label="SMA STRAT", linestyle="--")
-    plt.plot(bh_returns, label="BH STRAT", linestyle=":")
-    plt.title("SMA Strategy vs Buy & Hold")
-    plt.xlabel("Date")
-    plt.ylabel("Cumulative Return")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    plt.legend()
     plt.tight_layout()
-    plt.savefig(f"src/plots/_maSTRAT.png")
+    plt.savefig(plot_dir / f"{ticker}_strat_vs_bh.png")
+    plt.close()
 
-    return strat_returns, bh_returns, signals, positions
 
-    
 
-aapl = yf.Ticker("AAPL")
-prices = aapl.history(period="10y")["Close"]
-sma = compute_sma(prices, 20)
 
-sma_strat(sma, prices)
+def run_sma_strategy(ticker,window=20, period= "5y" , start=None, end = None):
+    if start or end:
+        close_prices = get_close_prices(ticker, start=start, end=end)
+    else:
+        close_prices = get_close_prices(ticker, period=period)
+
+    sma = compute_sma(close_prices, window)
+    signals = generate_signals(close_prices, sma)
+    positions = build_positions(signals)
+
+    daily_returns = compute_daily_returns(close_prices)
+    strat_returns = compute_strategy_returns(daily_returns, positions)
+
+    strat_cumulative = compute_cumulative_returns_from_returns(strat_returns)
+    bh_cumulative = compute_cumulative_returns_from_returns(daily_returns)
+
+
+    plot_strategy_vs_bh(strat_cumulative, bh_cumulative,close_prices,sma, ticker)
+
+    return {
+        "signals": signals,
+        "positions": positions,
+        "strategy_returns": strat_returns,
+        "strategy_cumu": strat_cumulative,
+        "bh_cumu": bh_cumulative
+    }
+
+
+results = run_sma_strategy("AAPL", start="2021-01-01",end="2021-12-31", window=20)
+
+
+
+
 

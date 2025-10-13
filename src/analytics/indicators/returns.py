@@ -1,44 +1,56 @@
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
+from src.data.fetch_data import get_close_prices
 
 
 
-def compute_daily_returns(prices: pd.Series) -> pd.Series:
+def compute_daily_returns(prices):
     """
     Compute daily returns from a Pandas Series of prices.
 
     Params:
-        prices (pd.series) : Daily stock prices indexed by date.
+        prices : Pandas series or dataframe of daily stock prices indexed by date
 
     Returns:
-        pd.series: Daily returns as percentages (e.g., 0.02 = 2%)
+         Daily returns as percentages (e.g., 0.02 = 2%) for each stock
     """
-
-    # Operations on pandas SERIES !!!
-
-    # what i want to do is for each element in the series, take the value divided by previous value and then substract 1
 
     returns = prices.pct_change()
 
-    return returns
+    return returns.fillna(0)
 
 
 
-def compute_cumulative_returns(prices: pd.Series, as_percentage: bool = True) -> pd.Series:
+def compute_cumulative_returns(prices, as_percentage: bool = True) -> pd.Series:
     """
     Compute cumulative returns from a Pandas Series of prices.
 
     Params:
-        prices (pd.series) : Daily stock prices indexed by date.
+        prices: Pandas Series or DataFrame of daily stock prices indexed by date for different stocks
 
     Returns:
-        pd.series: Cumulative returns as percentages (e.g., 0.02 = 2%)
+        pandas series or dataframe of cumulative returns
     """
 
-    cumulative = (1+compute_daily_returns(prices)).cumprod()
+    cumulative = (1 + compute_daily_returns(prices)).cumprod() - 1
+    return cumulative
 
-    return cumulative - 1 if as_percentage else cumulative
+
+def compute_cumulative_returns_from_returns(daily_returns) -> pd.Series:
+    """
+    Compute cumulative returns from a Pandas Series of prices.
+
+    Params:
+        prices: Pandas Series or DataFrame of daily stock prices indexed by date for different stocks
+
+    Returns:
+        pandas series or dataframe of cumulative returns
+    """
+
+    cumulative = (1 + daily_returns).cumprod() - 1
+    return cumulative
+
 
 
 def get_company_returns(ticker: str ="AAPL"):
@@ -53,13 +65,7 @@ def get_company_returns(ticker: str ="AAPL"):
         ret: The cumulative returns made over the week
     """
 
-    try:
-        ticker_obj = yf.Ticker(ticker)
-        history = ticker_obj.history(period="5d")
-    except Exception as e:
-        raise ValueError(f'Could not fetch the data for ticker {ticker}')
-
-    prices = history["Close"]
+    prices = get_close_prices(ticker, period="5d")
 
     return compute_daily_returns(prices)
 
@@ -67,6 +73,7 @@ def get_company_returns(ticker: str ="AAPL"):
 def compute_sma(prices: pd.Series, window: int) -> pd.Series:
     # using the rolling method on series to get a rolling object, which then allows us to
     # compute a moving average as we extract the mean of each value using the window
+
     return prices.rolling(window=window).mean()
 
 
@@ -91,6 +98,8 @@ def compute_ema(prices, span):
         # ewm = Exponential weighted moving
         # It creates an exponential window object which know how to apply weights to our data
         # , so I can then call .mean() (for ema), to then do the operation we describe on top
+
+
     return prices.ewm(span=span, adjust=False).mean()
 
 
@@ -98,7 +107,6 @@ def plot_MAs(prices, sma, ema, ticker):
     """
     Plot stock prices with SMA and EMA
     """
-
     plt.figure(figsize=(10,6))
     plt.plot(prices, label=f"{ticker} Price", linewidth=2)
     plt.plot(sma, label="SMA", linestyle = "--")
@@ -116,15 +124,4 @@ def plot_MAs(prices, sma, ema, ticker):
 
 
 if __name__ == "__main__":
-    ticker ="NFLX"
-    ticker_obj = yf.Ticker(ticker)
-    prices = ticker_obj.history(period="3mo")["Close"]
-
-    sma = compute_sma(prices, 20)
-    ema = compute_ema(prices, 20)
-
-    print(sma)
-    print(ema)
-    print(prices)
-
-    plot_MAs(prices, sma, ema, ticker)
+    print(compute_daily_returns(get_close_prices("AAPL", start="2023-01-01", end="2023-12-31")))
