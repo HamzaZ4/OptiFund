@@ -65,3 +65,13 @@ This method smooths entry and uses EMA as dynamic support.
 A **Moving Average Ribbon** layers multiple EMAs (e.g., 10, 21, 50, 100, 200) to visualize trend strength and momentum.  
 
 More info: [TrendSpider – Moving Average Ribbon](https://trendspider.com/learning-center/what-is-a-moving-average-ribbon/)
+
+
+### Simple moving average crossover strategy (SMACS):
+
+In this folder, we will be implementing a simple SMACS where we will
+be using the simple moving average as an indicator for when to buy in or sell off a certain Stock.
+
+What is the indicator? 
+The SMCS uses a window to compute the sma of a stock.
+Using this information, when a stock just crosses the sma to go over, we purchase pa

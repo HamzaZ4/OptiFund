@@ -39,10 +39,3 @@ def get_close_prices(
     close_prices.columns = [c.upper() for c in close_prices.columns]
 
     return close_prices
-
-
-if __name__ == "__main__":
-    df = get_close_prices(["AAPL","MSFT"], start="2020-01-01", end="2025-01-01")
-    print(df.info())
-    print(df.head())
-    print(df.head())
