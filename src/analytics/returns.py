@@ -1,5 +1,4 @@
 import pandas as pd
-import yfinance as yf
 import matplotlib.pyplot as plt
 from src.data.fetch_data import get_close_prices
 
@@ -102,6 +101,13 @@ def compute_ema(prices, span):
 
     return prices.ewm(span=span, adjust=False).mean()
 
+def compute_annulaized_returns(daily_returns):
+    """
+    Annualizing daily returns for each asset
+    """
+    mean_daily = daily_returns.mean()
+    annualized = (1+ mean_daily) ** 252 - 1
+    return annualized
 
 def plot_MAs(prices, sma, ema, ticker):
     """

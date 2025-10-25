@@ -50,6 +50,12 @@ def compute_sharpe_ratio(returns: pd.Series, rf: float = 0.02) -> float:
 
 
 
+def compute_annualized_covariance(daily_returns):
+    """
+    Annualized covariance from daily returns.
+    """
+    cov_daily = daily_returns.cov()
+    return cov_daily * 252
 
 
 
