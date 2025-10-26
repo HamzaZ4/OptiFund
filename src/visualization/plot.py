@@ -1,3 +1,5 @@
+import numpy
+import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -35,4 +37,30 @@ def plot_covariance_heatmap(cov: np.ndarray, labels=None, path=None):
         plt.savefig(path)
     else:
         plt.show()
+    plt.close()
+
+
+def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path):
+    plt.figure(figsize=(10,6))
+    plt.title("Efficiency Frontiers")
+    plt.scatter(portfolios["risk"], portfolios["ret"], c=portfolios["sharpe"], cmap="Blues")
+    plt.scatter(marko_stats["Risk"], marko_stats["Return"], c="red", marker="*", s=200, label="Min Var")
+    plt.scatter(max_sharpe_stats["Risk"], max_sharpe_stats["Return"], c="orange", marker="*", s=200, label="Max Sharpe")
+    plt.colorbar(label="Sharpe Ratio")
+
+    sigma_star = max_sharpe_stats["Risk"]
+    mu_star = max_sharpe_stats["Return"]
+    S_star = (mu_star - rf) / sigma_star
+
+    x = np.linspace(0, portfolios["risk"].max() * 1.1, 200)
+    y = rf + S_star * x
+
+    plt.plot(x, y, linestyle="--", linewidth=1.5, color="black", label="Capital Market Line")
+    plt.scatter(0, rf, color="black", s=60, marker="o", zorder=3)
+
+    plt.xlabel("Risk")
+    plt.ylabel("Returns")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(path)
     plt.close()
