@@ -1,10 +1,8 @@
-import yfinance as yf
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.stats import kurtosis, norm
+from scipy.stats import kurtosis
 import seaborn as sns
-from src.data.fetch_data import get_close_prices
 
 def clean_returns(prices: pd.DataFrame) -> pd.DataFrame:
     """

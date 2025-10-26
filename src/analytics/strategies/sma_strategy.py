@@ -1,6 +1,4 @@
 from __future__ import annotations
-from typing import Dict
-import pandas as pd
 
 from src.data.fetch_data import get_close_prices
 from src.analytics.returns import (
@@ -26,7 +24,7 @@ def compute_strategy_returns(daily_returns, positions):
     strategy_returns = daily_returns * positions
     return strategy_returns
 
-def run_sma_strategy(ticker,window=20, period= "5y" , start=None, end = None):
+def run_sma_strategy(ticker,window=20, period= "5y", start=None, end = None):
     prices = (
         get_close_prices(ticker, start=start, end=end)
         if (start or end)

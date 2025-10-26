@@ -1,31 +1,38 @@
-import numpy
 import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
 
-def plot_strategy_comparison(strat_returns, bh_returns, title, path):
+def plot_strategy_comparison(strat_returns, bh_returns, title, path, return_fig=False):
     plt.figure(figsize=(10, 6))
     plt.plot(strat_returns, label="SMA Strategy", linestyle="--")
     plt.plot(bh_returns, label="Buy & Hold", linestyle=":")
     plt.title(title)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(path)
+    if return_fig:
+        plt.close()
+        return plt.gcf()
+    if path:
+        plt.savefig(path)
     plt.close()
 
-def plot_price_with_sma(prices, sma, title, path):
+def plot_price_with_sma(prices, sma, title, path, return_fig=False):
     plt.figure(figsize=(10, 4))
     plt.plot(prices, label="Price", linewidth=1.5)
     plt.plot(sma, label=f"SMA({sma.dropna().index.size})", linestyle="--")
     plt.title(title)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(path)
+    if return_fig:
+        plt.close()
+        return plt.gcf()
+    if path:
+        plt.savefig(path)
     plt.close()
 
 
-def plot_covariance_heatmap(cov: np.ndarray, labels=None, path=None):
+def plot_covariance_heatmap(cov: np.ndarray, labels=None, path=None, return_fig=False):
     mask = np.triu(np.ones_like(cov, dtype=bool), k=1)
     plt.figure(figsize=(10, 6))
     sns.heatmap(cov, mask=mask, cmap="coolwarm", annot=True, fmt=".2f",
@@ -33,14 +40,16 @@ def plot_covariance_heatmap(cov: np.ndarray, labels=None, path=None):
                 xticklabels=labels, yticklabels=labels)
     plt.title("Covariance Matrix")
     plt.tight_layout()
+
+    if return_fig:
+        plt.close()
+        return plt.gcf()
     if path:
         plt.savefig(path)
-    else:
-        plt.show()
     plt.close()
 
 
-def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path):
+def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path, return_fig=False):
     plt.figure(figsize=(10,6))
     plt.title("Efficiency Frontiers")
     plt.scatter(portfolios["risk"], portfolios["ret"], c=portfolios["sharpe"], cmap="Blues")
@@ -62,11 +71,16 @@ def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path)
     plt.ylabel("Returns")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(path)
+    if return_fig:
+        plt.close()
+        return plt.gcf()
+    if path:
+        print(path)
+        plt.savefig(path)
     plt.close()
 
 
-def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Portfolio Backtest" ):
+def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Portfolio Backtest", return_fig=False ):
     plt.figure(figsize=(12,6))
     for label, series in curves.items():
         if label == "Max Sharpe Portfolio":
@@ -81,5 +95,9 @@ def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Po
     plt.title(title)
     plt.xlabel("Date")
     plt.ylabel("Cumulative Returns")
-    plt.savefig(path)
-    plt.show()
+    if return_fig:
+        plt.close()
+        return plt.gcf()
+    if path:
+        plt.savefig(path)
+    plt.close()
