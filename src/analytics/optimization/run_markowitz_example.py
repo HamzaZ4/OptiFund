@@ -38,8 +38,4 @@ max_sharpe_stats = portfolio_stats(max_sharpe_w, ann_ret, ann_cov)
 
 portfolios = generate_portfolios(ann_ret, ann_cov, n_portfolios=5000)
 
-plot_efficiency_frontier(portfolios, marko_stats, max_sharpe_stats, 0.05,path=out_dir / f"optim{tickers}.png" )
-
-
-
-
+plot_efficiency_frontier(portfolios, marko_stats, max_sharpe_stats, 0.05,path=out_dir / f"backtesting/optim{tickers}.png" )

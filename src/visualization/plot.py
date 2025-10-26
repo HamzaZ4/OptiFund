@@ -64,3 +64,22 @@ def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path)
     plt.tight_layout()
     plt.savefig(path)
     plt.close()
+
+
+def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Portfolio Backtest" ):
+    plt.figure(figsize=(12,6))
+    for label, series in curves.items():
+        if label == "Max Sharpe Portfolio":
+            plt.plot(series.index, series.values, label=label, c="red", linewidth=2.5, zorder=3)
+        elif label == "Equal Weight":
+            plt.plot(series.index, series.values, label=label, c="blue", linestyle="--", linewidth=2, zorder=2)
+        else:
+            plt.plot(series.index, series.values, c="gray", alpha=0.3, linewidth=1, zorder=1)
+
+
+    plt.legend()
+    plt.title(title)
+    plt.xlabel("Date")
+    plt.ylabel("Cumulative Returns")
+    plt.savefig(path)
+    plt.show()
