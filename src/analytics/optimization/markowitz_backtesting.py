@@ -87,9 +87,9 @@ def run_backtest(
 
     test_prices = get_close_prices(tickers, start=test_start, end=test_end)
     curves = {
-        "max_sharpe": backtest_portfolio(w_max_sharpe, test_prices),
-        "min_var": backtest_portfolio(w_min_var, test_prices),
-        "equal": backtest_portfolio(w_equal, test_prices),
+        "Max Sharpe Portfolio": backtest_portfolio(w_max_sharpe, test_prices),
+        "Min Var Portfolio": backtest_portfolio(w_min_var, test_prices),
+        "Equal Weight": backtest_portfolio(w_equal, test_prices),
     }
     rand_curves = random_portfolio_returns(test_prices, n_portfolios=n_random)
     curves.update(rand_curves)

@@ -8,7 +8,7 @@ from src.visualization.plot import plot_covariance_heatmap
 out_dir = Path("src/plots/risk")
 out_dir.mkdir(parents=True, exist_ok=True)
 
-tickers = ["JPM", "BAC", "TLT", "XOM"]
+tickers = ["JPM", "BAC", "TLT", "TSLA"]
 prices = get_close_prices(tickers, period="5y")
 returns = clean_returns(prices)
 
@@ -17,7 +17,6 @@ kurt = compute_kurtosis(returns)
 sharpe_jpm = compute_sharpe_ratio(returns["JPM"])
 
 print("Covariance:\n", cov)
-print("\nKurtosis:\n", kurt)
 print(f"\nJPM Sharpe Ratio: {sharpe_jpm:.2f}")
 
 plot_covariance_heatmap(cov, labels=tickers, path=out_dir / "covariance_heatmap.png")

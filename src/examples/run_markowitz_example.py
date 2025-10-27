@@ -26,9 +26,9 @@ def generate_portfolios(mu, cov, n_portfolios=5000, rf=0.02):
 
     return pd.DataFrame(results)
 
-tickers = ["AAPL", "TSLA", "TLT", "GLD"]
+tickers = ["GM"]
 
-prices = get_close_prices(tickers, period="2y")
+prices = get_close_prices(tickers, period="1y")
 
 ann_ret, ann_cov = prepare_portfolio_inputs(prices)
 
@@ -37,7 +37,7 @@ marko_stats = portfolio_stats(marko_w, ann_ret, ann_cov)
 max_sharpe_w = maximize_sharpe_ratio(ann_ret, ann_cov, 0.07)
 max_sharpe_stats = portfolio_stats(max_sharpe_w, ann_ret, ann_cov)
 
-portfolios = generate_portfolios(ann_ret, ann_cov, n_portfolios=500)
+portfolios = generate_portfolios(ann_ret, ann_cov, n_portfolios=5000)
 
 backtest_dir = out_dir
 backtest_dir.mkdir(parents=True, exist_ok=True)
