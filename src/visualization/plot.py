@@ -11,8 +11,9 @@ def plot_strategy_comparison(strat_returns, bh_returns, title, path, return_fig=
     plt.legend()
     plt.tight_layout()
     if return_fig:
+        fig = plt.gcf()
         plt.close()
-        return plt.gcf()
+        return fig
     if path:
         plt.savefig(path)
     plt.close()
@@ -25,28 +26,53 @@ def plot_price_with_sma(prices, sma, title, path, return_fig=False):
     plt.legend()
     plt.tight_layout()
     if return_fig:
+        fig = plt.gcf()
         plt.close()
-        return plt.gcf()
+        return fig
     if path:
         plt.savefig(path)
     plt.close()
 
 
-def plot_covariance_heatmap(cov: np.ndarray, labels=None, path=None, return_fig=False):
-    mask = np.triu(np.ones_like(cov, dtype=bool), k=1)
+def plot_covariance_heatmap(df, path=None, return_fig=False):
+    """
+    Plots a covariance heatmap using the DataFrame's own labels.
+    """
+    mask = np.triu(np.ones_like(df, dtype=bool), k=1)  # keep lower triangle
     plt.figure(figsize=(10, 6))
-    sns.heatmap(cov, mask=mask, cmap="coolwarm", annot=True, fmt=".2f",
-                cbar_kws={"label": "Covariance"},
-                xticklabels=labels, yticklabels=labels)
+    sns.heatmap(
+        df, mask=mask, cmap="coolwarm", annot=True, fmt=".6f",
+        cbar_kws={"label": "Covariance"}
+    )
     plt.title("Covariance Matrix")
     plt.tight_layout()
 
     if return_fig:
+        fig = plt.gcf()
         plt.close()
-        return plt.gcf()
+        return fig
     if path:
         plt.savefig(path)
     plt.close()
+
+
+def plot_correlation_heatmap(df, path=None, return_fig=False):
+    mask = np.triu(np.ones_like(df, dtype=bool), k=1)
+    plt.figure(figsize=(10,6))
+    sns.heatmap(
+        df, mask=mask, cmap="coolwarm", annot=True, fmt=".4f",
+        cbar_kws={"label": "Correlation"}
+    )
+    plt.title("Correlation Matrix")
+    plt.tight_layout()
+    if return_fig:
+        fig = plt.gcf()
+        return fig
+    if path:
+        plt.savefig(path)
+    plt.close()
+
+
 
 
 def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path, return_fig=False):
@@ -57,23 +83,14 @@ def plot_efficiency_frontier(portfolios,marko_stats, max_sharpe_stats, rf, path,
     plt.scatter(max_sharpe_stats["Risk"], max_sharpe_stats["Return"], c="orange", marker="*", s=200, label="Max Sharpe")
     plt.colorbar(label="Sharpe Ratio")
 
-    sigma_star = max_sharpe_stats["Risk"]
-    mu_star = max_sharpe_stats["Return"]
-    S_star = (mu_star - rf) / sigma_star
-
-    x = np.linspace(0, portfolios["risk"].max() * 1.1, 200)
-    y = rf + S_star * x
-
-    plt.plot(x, y, linestyle="--", linewidth=1.5, color="black", label="Capital Market Line")
-    plt.scatter(0, rf, color="black", s=60, marker="o", zorder=3)
-
     plt.xlabel("Risk")
     plt.ylabel("Returns")
     plt.legend()
     plt.tight_layout()
     if return_fig:
+        fig = plt.gcf()
         plt.close()
-        return plt.gcf()
+        return fig
     if path:
         print(path)
         plt.savefig(path)
@@ -97,9 +114,11 @@ def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Po
     plt.title(title)
     plt.xlabel("Date")
     plt.ylabel("Cumulative Returns")
+    plt.show()
     if return_fig:
+        fig = plt.gcf()
         plt.close()
-        return plt.gcf()
+        return fig
     if path:
         plt.savefig(path)
     plt.close()

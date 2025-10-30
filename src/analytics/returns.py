@@ -101,7 +101,7 @@ def compute_ema(prices, span):
 
     return prices.ewm(span=span, adjust=False).mean()
 
-def compute_annulaized_returns(daily_returns):
+def compute_annualized_returns(daily_returns):
     """
     Annualizing daily returns for each asset
     """

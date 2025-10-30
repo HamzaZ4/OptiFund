@@ -1,5 +1,5 @@
 import numpy as np
-from src.analytics.returns import compute_annulaized_returns
+from src.analytics.returns import compute_annualized_returns
 from src.analytics.risk.risk_metrics import clean_returns, compute_annualized_covariance
 from scipy.optimize import minimize
 
@@ -17,7 +17,7 @@ def prepare_portfolio_inputs(prices):
         cov: annualized covariance matrix.
     """
     daily_returns  = clean_returns(prices)
-    mu = compute_annulaized_returns(daily_returns)
+    mu = compute_annualized_returns(daily_returns)
     cov = compute_annualized_covariance(daily_returns)
 
     return mu, cov

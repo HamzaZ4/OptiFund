@@ -9,7 +9,9 @@ def clean_returns(prices: pd.DataFrame) -> pd.DataFrame:
         Convert price dataframe to clean daily returns.
         Drops NaNs and resets index for easy analysis.
     """
+    print("prices", prices)
     prices = prices.pct_change().dropna()
+    print("prices after pct change", prices)
     prices.columns.name = None
     return prices
 
@@ -55,5 +57,9 @@ def compute_annualized_covariance(daily_returns):
     cov_daily = daily_returns.cov()
     return cov_daily * 252
 
+
+
+def compute_correlation(returns):
+    return returns.corr()
 
 

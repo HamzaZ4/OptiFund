@@ -6,13 +6,13 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 out_dir = BASE_DIR / "src" / "plots" / "optim" / "backtesting"
 out_dir.mkdir(parents=True, exist_ok=True)
 
-tickers = ["JPM", "AAPL", "TSLA", "GLD"]
+tickers = ["JPM", "XEQT.TO", "TSLA", "GLD"]
 
 result = run_backtest(
     tickers=tickers,
-    train_start="2023-01-01",
-    train_end="2023-12-31",
-    test_start="2024-01-01",
+    train_start="2021-01-01",
+    train_end="2022-12-31",
+    test_start="2023-01-01",
     test_end="2024-12-31",
     rf=0.07,
     n_random=10,
