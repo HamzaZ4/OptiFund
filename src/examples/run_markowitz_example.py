@@ -26,7 +26,7 @@ def generate_portfolios(mu, cov, n_portfolios=5000, rf=0.02):
 
     return pd.DataFrame(results)
 
-tickers = ["GM"]
+tickers = ["GM", "GOOG", "XOM", "GLD"]
 
 prices = get_close_prices(tickers, period="1y")
 

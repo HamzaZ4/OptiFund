@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 out_dir = BASE_DIR / "src" / "plots" / "optim" / "backtesting"
 out_dir.mkdir(parents=True, exist_ok=True)
 
-tickers = ["JPM", "XEQT.TO", "TSLA", "GLD"]
+tickers = ["JPM", "GM", "TSLA", "GLD"]
 
 result = run_backtest(
     tickers=tickers,

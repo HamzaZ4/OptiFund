@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 from src.analytics.optimization.markowitz import prepare_portfolio_inputs, maximize_sharpe_ratio, compute_min_var_portfolio
-from src.analytics.returns import get_close_prices
+from src.analytics.helpers.returns import get_close_prices
 from src.visualization.plot import plot_cumulative_returns
 from pathlib import Path
+from src.analytics.helpers.validateTickers import validateTicker
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 out_dir = BASE_DIR / "src" / "plots" / "optim"
@@ -59,6 +60,7 @@ def run_backtest(
     n_random: int = 100,
     save_plot: bool = False,
     plot_path: Path | None = None,
+    return_fig: bool = False
 ):
     """
     Args:
@@ -77,6 +79,13 @@ def run_backtest(
     """
     tickers = [t.upper().strip() for t in tickers]
 
+    if not (train_start < train_end and train_end < test_start and test_start < test_end):
+       raise Exception("There is a date mismatch")
+    
+    for ticker in tickers:
+        if not validateTicker(ticker):
+            raise Exception("One of the tickers doesn't exist as a USD traded asset")
+    
     train_prices = get_close_prices(tickers, start=train_start, end=train_end)
     mu, cov = prepare_portfolio_inputs(train_prices)
 
@@ -96,6 +105,8 @@ def run_backtest(
 
     if save_plot:
         plot_cumulative_returns(path=plot_path, curves=curves)
+    elif return_fig:
+        return plot_cumulative_returns(path=plot_path, return_fig=True, curves = curves)
     return {
         "weights": {"max_sharpe": w_max_sharpe, "min_var": w_min_var, "equal": w_equal},
         "curves": curves,

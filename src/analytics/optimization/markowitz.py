@@ -1,5 +1,5 @@
 import numpy as np
-from src.analytics.returns import compute_annualized_returns
+from src.analytics.helpers.returns import compute_annualized_returns
 from src.analytics.risk.risk_metrics import clean_returns, compute_annualized_covariance
 from scipy.optimize import minimize
 

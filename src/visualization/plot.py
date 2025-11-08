@@ -114,7 +114,6 @@ def plot_cumulative_returns(path, curves: dict[str, pd.Series], title: str = "Po
     plt.title(title)
     plt.xlabel("Date")
     plt.ylabel("Cumulative Returns")
-    plt.show()
     if return_fig:
         fig = plt.gcf()
         plt.close()

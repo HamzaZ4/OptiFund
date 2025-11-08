@@ -3,6 +3,7 @@ from turtledemo.penrose import start
 import streamlit as st
 import matplotlib.pyplot as plt
 from src.analytics.strategies.sma_strategy import run_sma_strategy
+from src.analytics.helpers.validateTickers import validateTicker
 from src.visualization.plot import plot_strategy_comparison, plot_price_with_sma
 
 st.title("OptiFund | SMA Strategy Backtesting")
@@ -17,6 +18,18 @@ window = int(st.sidebar.number_input("Window Size"))
 
 if st.sidebar.button("Run Backtest"):
     st.write(f"### Results for {ticker} ({start} → {end})")
+    is_ticker_valid = validateTicker(ticker)
+    if not is_ticker_valid:
+        st.error(f"Invalid ticker symbol: {ticker}")
+        st.stop()
+    elif start > end:
+        st.error(f"Invalid dates start is set to before the end ...")
+        st.stop()
+    elif window < 2:
+        st.error(f"Invalid window size: {window}, must be at least 2 days ")
+
+
+
     results = run_sma_strategy(ticker, window=window, start=start, end=end)
 
     st.subheader("Performance Comparison")

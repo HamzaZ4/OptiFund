@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from src.visualization.plot import plot_efficiency_frontier
+from src.visualization.plot import plot_efficiency_frontier, plot_cumulative_returns
 from src.data.fetch_data import get_close_prices
 from src.analytics.optimization.markowitz import (
     prepare_portfolio_inputs,
@@ -8,60 +8,41 @@ from src.analytics.optimization.markowitz import (
     portfolio_stats,
     maximize_sharpe_ratio,
 )
+from src.analytics.optimization.markowitz_backtesting import run_backtest
+from src.analytics.helpers.validateTickers import validateTicker
 from src.examples.run_markowitz_example import generate_portfolios
+from matplotlib.figure import Figure
 
 st.title("OptiFund | Markowitz Optimizer")
 st.markdown("Analyze your portfolio efficiency and backtest its performance over time.")
 
-st.header("Understanding Modern Portfolio Theory (MPT)")
+st.header("Markowitz Optimizer (interactive)")
+st.markdown(
+    "This page focuses on the interactive optimizer and backtests. "
+    "For background on MPT, covariance, Sharpe ratio and the efficient frontier, "
+    "see the **Markowitz Theory** page."
+)
 
-st.markdown("""
-Modern Portfolio Theory (MPT), which was introduced by **Harry Markowitz in 1952**, 
-is the foundation of modern investing.
+with st.expander("Quick refresher"):
+    st.markdown(
+        "- Efficient frontier: set of portfolios that maximize return for a given risk.\n"
+        "- Max Sharpe: best return per unit of risk (tangency portfolio).\n"
+        "- Min variance: portfolio with the lowest possible volatility."
+    )
 
-The big idea: **don’t mindlessly pick assets in isolation**, instead, 
-optimize your **whole portfolio** by balancing *expected return* and *risk*.
+st.subheader("The Efficient Frontier test")
 
-In other words, investors should aim for portfolios that:
-- **maximize return** for a given level of risk, or
-- **minimize risk** for a given level of return.
-""")
-
-st.subheader("Expected Return and Risk")
-with st.expander("Expected Return and Risk"):
+with st.expander("How to use the efficient frontier Test"):
     st.markdown("""
-    Each asset has an expected return (μ) and risk (σ).
-    For a portfolio, these combine as:
-    
-    - **Expected portfolio return**  
-      \\( E[R_p] = w^T μ \\)
-    
-    - **Portfolio variance (risk)**  
-      \\( σ_p^2 = w^T Σ w \\)
-    
-    where:
-    - *w* = vector of portfolio weights  
-    - *Σ* = covariance matrix of asset returns  
-    """)
+                First, you must read the efficient frontier theory  on the **Markowitz theory** page
+                to understand the meaning of the generated graph
 
-    st.markdown("""
-    The covariance term (Σ) captures how assets move **together** — 
-    this is why diversification matters.  
-    Low or negative covariances reduce overall portfolio risk.
-    """)
-
-st.subheader("The Efficient Frontier")
-
-with st.expander("Sharpe Ratio and Efficient Frontier"):
-    st.markdown("""
-    The **Efficient Frontier** represents all optimal portfolios — 
-    those that offer the highest expected return for each level of risk.
-    
-    Portfolios below the frontier are **inefficient** (you could earn more return for the same risk).  
-    Portfolios above it are **impossible** — they’d violate market assumptions.
-    
-    To estimate this frontier, we simulate thousands of random portfolios 
-    and compute their return, risk, and Sharpe ratio.
+                ### Understanding the parameters
+                - Tickers : This is supposed to be a comma seperated list of all the tickers you want in the portfolio
+                - Risk-free rate: This represents a decimal value of some guaranteed rate of return on your money
+                - Number of random portfolios: This is the number of random portfolios you wish to generate in the graph
+                - Data period is the historical window fetched from Yahoo Finance (e.g. '1y' = last 1 year of daily closes)
+                to be used for the evaluation of the potfolio risks and returns
     """)
 
 
@@ -78,15 +59,11 @@ with st.sidebar.expander("Configure Efficient Frontier"):
 if st.sidebar.button("Run Efficiency Frontier"):
     st.markdown("""
     - The **blue cloud** shows feasible portfolios.  
-    - The **orange star** marks the **Maximum Sharpe Ratio Portfolio** (tangent to the Capital Market Line).  
+    - The **orange star** marks the **Maximum Sharpe Ratio Portfolio**.  
     - The **red star** marks the **Minimum Variance Portfolio** — the safest efficient portfolio.
     """)
     st.markdown("""
-    The **Capital Market Line (CML)** connects the risk-free asset (e.g. treasury bills) 
-    to the tangency portfolio (the Max Sharpe portfolio).
-
-    All points along this line represent portfolios combining risk-free lending and risky investing.  
-    No portfolio can lie above this line — those would imply returns higher than theoretically possible.
+    For a full theory explanation (including the Capital Market Line), open the **Markowitz Theory** page.
     """)
 
     st.subheader("Efficient Frontier Simulation")
@@ -114,13 +91,37 @@ if st.sidebar.button("Run Efficiency Frontier"):
         st.error(f"Error while running optimization: {e}")
 
 
+
 # Backtesting ------------------------------------------------------------------------------------
+
+st.subheader("Backtesting with modern portfolio theory")
+
+with st.expander("How to use the backtest"):
+    st.markdown("""
+                First, you must read the backtesting theory on the **Markowitz theory** page
+                to understand the meaning of the generated graph
+
+                ### Understanding the parameters
+                - Tickers : This is supposed to be a comma seperated list of all the tickers you want in the portfolio
+                - Training Start/End Date : These dates outline the interval of time between which we want to compute what our "optimal portfolio" will be
+                - Testing Start/End Date : These dates outline the interval of time between which we are going to test the returns for the protfolio given
+                - Risk-free rate: This represents a decimal value of some guaranteed rate of return on your money
+                - Data period is the historical window fetched from Yahoo Finance (e.g. '1y' = last 1 year of daily closes)
+                to be used for the evaluation of the potfolio risks and returns
+    """)
+
+st.sidebar.header("Backtesting Parameters")
+
+
+
 
 st.sidebar.header("Backtesting Parameters")
 with st.sidebar.expander("Configure Backtest"):
 
     backtest_tickers = st.text_input("Tickers for backtest", value="AAPL,TSLA,GLD")
-    backtest_tickers = [t.strip().upper() for t in backtest_tickers.split(",") if t.strip()]
+    backtest_tickers = list(dict.fromkeys(
+        (t.strip().upper() for t in backtest_tickers.split(",") if t.strip())
+    ))
 
     train_start = st.date_input("Training Start Date")
     train_end = st.date_input("Training End Date")
@@ -129,26 +130,53 @@ with st.sidebar.expander("Configure Backtest"):
 
     backtest_rf = st.number_input("Risk-free rate (annual)", value=0.03, step=0.01)
 
+
+
+
 if st.sidebar.button("Run Backtest"):
     st.subheader("Portfolio Backtest")
     try:
-        train_prices = get_close_prices(backtest_tickers, start=train_start, end=train_end)
-        test_prices = get_close_prices(backtest_tickers, start=test_start, end=test_end)
+        # validate tickers up-front
+        for ticker in backtest_tickers:
+            if not validateTicker(ticker):
+                st.error(f"Invalid ticker: {ticker}, must only use existing tickers trading in USD")
+                st.stop()
 
-        mu, cov = prepare_portfolio_inputs(train_prices)
+        # Run backtest and ask it to return the figure directly.
+        result = run_backtest(
+            tickers=backtest_tickers,
+            train_start=train_start,
+            train_end=train_end,
+            test_start=test_start,
+            test_end=test_end,
+            rf=backtest_rf,
+            n_random=50,
+            save_plot=False,
+            plot_path=None,
+            return_fig=True,
+        )
 
-        w_max_sharpe = maximize_sharpe_ratio(mu, cov, backtest_rf)
-        w_min_var = compute_min_var_portfolio(mu, cov, backtest_rf)
-        w_equal = np.ones(len(backtest_tickers)) / len(backtest_tickers)
+        # Use the figure returned by run_backtest directly (no re-plotting)
+        if isinstance(result, Figure):
+            st.pyplot(result)
+        elif isinstance(result, dict):
+            fig = result.get("fig")
+            if fig is None:
+                st.error("Backtest completed but did not return a figure.")
+            else:
+                st.pyplot(fig)
 
-        st.write("#### Optimized Portfolio Weights")
-        st.dataframe({
-            "Ticker": backtest_tickers,
-            "Min Var": w_min_var,
-            "Max Sharpe": w_max_sharpe,
-            "Equal Weight": w_equal
-        })
-
+            weights = result.get("weights", {})
+            if weights:
+                st.write("#### Optimized Portfolio Weights")
+                st.dataframe({
+                    "Ticker": backtest_tickers,
+                    "Min Var": np.round(weights["min_var"], 6),
+                    "Max Sharpe": np.round(weights["max_sharpe"], 6),
+                    "Equal Weight": np.round(weights["equal"], 6),
+                })
+        else:
+            st.error(f"Unexpected result from run_backtest: {type(result)}")
 
     except Exception as e:
         st.error(f"Error during backtest: {e}")

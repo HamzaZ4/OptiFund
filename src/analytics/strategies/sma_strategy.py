@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from src.data.fetch_data import get_close_prices
-from src.analytics.returns import (
+from src.analytics.helpers.returns import (
     compute_daily_returns,
     compute_cumulative_returns_from_returns,
     compute_sma,
